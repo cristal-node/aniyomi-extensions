@@ -22,8 +22,6 @@ jobs:
   build_individual:
     name: Build individual modules
     runs-on: ubuntu-latest
-    strategy:
-      matrix: ${{ fromJSON(needs.prepare.outputs.individualMatrix) }}
     steps:
       - name: Checkout
         uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
@@ -58,56 +56,3 @@ jobs:
 
       - name: Clean up CI files
         run: rm signingkey.jks
-
-  publish_repo:
-    name: Publish repo
-    needs:
-      - build_individual
-    if: "github.repository == 'Kohi-den/extensions-source'"
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download APK artifacts
-        uses: actions/download-artifact@eaceaf801fd36c7dee90939fad912460b18a1ffe # v4
-        with:
-          path: ~/apk-artifacts
-
-      - name: Set up JDK
-        uses: actions/setup-java@387ac29b308b003ca37ba93a6cab5eb57c8f5f93 # v4
-        with:
-          java-version: 17
-          distribution: temurin
-
-      - name: Checkout main branch
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-        with:
-          ref: main
-          path: main
-
-      - name: Create repo artifacts
-        run: |
-          cd main
-          python ./.github/scripts/move-apks.py
-          INSPECTOR_LINK="$(curl -s "https://api.github.com/repos/aniyomiorg/aniyomi-extensions-inspector/releases/latest" | jq -r '.assets[0].browser_download_url')"
-          curl -L "$INSPECTOR_LINK" -o ./Inspector.jar
-          java -jar ./Inspector.jar "repo/apk" "output.json" "tmp"
-          python ./.github/scripts/create-repo.py
-
-      - name: Checkout repo branch
-        uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4
-        with:
-          repository: Kohi-den/extensions
-          token: ${{ secrets.BOT_PAT }}
-          ref: main
-          path: repo
-
-      - name: Sync repo
-        run: |
-          rsync -a --delete --exclude .git --exclude .gitignore main/repo/ repo --exclude README.md --exclude repo.json
-
-      - name: Deploy repo
-        uses: EndBug/add-and-commit@v9
-        with:
-          message: "Update extensions repo"
-          cwd: "./repo"
-          committer_name: Kohi-den-Bot
-          committer_email: 177773202+Kohi-den-Bot@users.noreply.github.com
