@@ -21,7 +21,6 @@ env:
 jobs:
   build_individual:
     name: Build individual modules
-    needs: prepare
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJSON(needs.prepare.outputs.individualMatrix) }}
