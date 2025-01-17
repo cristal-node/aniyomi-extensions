@@ -1,5 +1,5 @@
 ext {
-    extName = 'Subsplease'
+    extName = 'Subsplease (debrid)'
     extClass = '.Subsplease'
     extVersionCode = 1
     containsNsfw = false
