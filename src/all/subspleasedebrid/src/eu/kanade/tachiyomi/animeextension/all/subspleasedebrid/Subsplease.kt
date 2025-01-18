@@ -108,7 +108,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
         return videosFromElement(responseString, num)
     }
 
-    private fun UtoHash(magnet: String): String {
+    private fun utoHash(magnet: String): String {
         val regex = Regex("xt=urn:btih:([A-Fa-f0-9]{40}|[A-Za-z0-9]{32})|dn=([^&]+)")
         var infohash = ""
         var title = ""
@@ -133,7 +133,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
                 for (item in dowArray) {
                     val quality = item.jsonObject["res"]!!.jsonPrimitive.content + "p"
                     val videoUrl = item.jsonObject["magnet"]!!.jsonPrimitive.content
-                    videoList.add(Video(videoUrl, quality, UtoHash(videoUrl)))
+                    videoList.add(Video(videoUrl, quality, utoHash(videoUrl)))
                 }
             }
         }
