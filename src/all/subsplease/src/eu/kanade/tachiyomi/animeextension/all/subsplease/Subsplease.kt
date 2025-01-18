@@ -286,4 +286,5 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
             "offcloud",
             "torbox",
         )
+    }
 }
