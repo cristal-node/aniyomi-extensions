@@ -3,6 +3,7 @@ package eu.kanade.tachiyomi.animeextension.all.subsplease
 import android.app.Application
 import android.content.SharedPreferences
 import android.widget.Toast
+import androidx.preference.EditTextPreference
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.animesource.ConfigurableAnimeSource
