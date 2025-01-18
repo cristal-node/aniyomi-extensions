@@ -2,6 +2,7 @@ package eu.kanade.tachiyomi.animeextension.all.subsplease
 
 import android.app.Application
 import android.content.SharedPreferences
+import android.widget.Toast
 import androidx.preference.ListPreference
 import androidx.preference.PreferenceScreen
 import eu.kanade.tachiyomi.animesource.ConfigurableAnimeSource
@@ -226,7 +227,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
 
             setOnPreferenceChangeListener { _, newValue ->
                 runCatching {
-                    val value = (newValue as String).trim().ifBlank { PREF_TOKEN_DEFAULT }
+                    val value = (newValue as String).trim().ifBlank { "" }
                     Toast.makeText(screen.context, "Restart Aniyomi to apply new setting.", Toast.LENGTH_LONG).show()
                     preferences.edit().putString(key, value).commit()
                 }.getOrDefault(false)
