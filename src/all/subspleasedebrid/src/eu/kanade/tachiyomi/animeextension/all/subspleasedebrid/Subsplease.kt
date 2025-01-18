@@ -1,4 +1,4 @@
-package eu.kanade.tachiyomi.animeextension.all.subsplease
+package eu.kanade.tachiyomi.animeextension.all.subspleasedebrid
 
 import android.app.Application
 import android.content.SharedPreferences
