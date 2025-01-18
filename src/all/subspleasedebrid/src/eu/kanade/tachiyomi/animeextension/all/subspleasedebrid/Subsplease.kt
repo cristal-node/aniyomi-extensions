@@ -107,6 +107,18 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
         return videosFromElement(responseString, num)
     }
 
+    private fun UtoHash(magnet: String): String {
+        val regex = Regex("xt=urn:btih:([A-Fa-f0-9]{40}|[A-Za-z0-9]{32})|dn=([^&]+)")
+        var infohash = ""
+        var title = ""
+        regex.findAll(magnet).forEach { match ->
+            match.groups[1]?.value?.let { infohash = it }
+            match.groups[2]?.value?.let { title = it }
+        }
+        val token = preferences.getString("token", null) ?: ""
+        return "https://torrentio.strem.fun/realdebrid/$token/$infohash/null/0/$title"
+    }
+
     private fun videosFromElement(jsonLine: String?, num: String): List<Video> {
         val jsonData = jsonLine ?: return emptyList()
         val jObject = json.decodeFromString<JsonObject>(jsonData)
@@ -120,7 +132,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
                 for (item in dowArray) {
                     val quality = item.jsonObject["res"]!!.jsonPrimitive.content + "p"
                     val videoUrl = item.jsonObject["magnet"]!!.jsonPrimitive.content
-                    videoList.add(Video(videoUrl, quality, videoUrl))
+                    videoList.add(Video(videoUrl, quality, UtoHash(videoUrl)))
                 }
             }
         }
@@ -204,5 +216,21 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
             }
         }
         screen.addPreference(qualityPref)
+
+        // Token
+        EditTextPreference(screen.context).apply {
+            key = "token"
+            title = "Token"
+            setDefaultValue("")
+            summary = "RD API token"
+
+            setOnPreferenceChangeListener { _, newValue ->
+                runCatching {
+                    val value = (newValue as String).trim().ifBlank { PREF_TOKEN_DEFAULT }
+                    Toast.makeText(screen.context, "Restart Aniyomi to apply new setting.", Toast.LENGTH_LONG).show()
+                    preferences.edit().putString(key, value).commit()
+                }.getOrDefault(false)
+            }
+        }.also(screen::addPreference)
     }
 }
