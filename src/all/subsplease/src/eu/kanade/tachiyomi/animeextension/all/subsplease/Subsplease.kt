@@ -135,10 +135,12 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
                 for (item in dowArray) {
                     val quality = item.jsonObject["res"]!!.jsonPrimitive.content + "p"
                     val videoUrl = item.jsonObject["magnet"]!!.jsonPrimitive.content
-                    if (preferences.getString(PREF_DEBRID_KEY, "none") == "none")
+                    if (preferences.getString(PREF_DEBRID_KEY, "none") == "none") {
                         videoList.add(Video(videoUrl, quality, videoUrl))
-                    else
+                    }
+                    else {
                         videoList.add(Video(debrid(videoUrl), quality, debrid(videoUrl)))
+                    }
                 }
             }
         }
@@ -223,7 +225,6 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
             }
         }.also(screen::addPreference)
 
-
         // Debrid provider
         ListPreference(screen.context).apply {
             key = PREF_DEBRID_KEY
@@ -241,7 +242,6 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
             }
         }.also(screen::addPreference)
 
-
         // Token
         EditTextPreference(screen.context).apply {
             key = PREF_TOKEN_KEY
@@ -258,7 +258,6 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
             }
         }.also(screen::addPreference)
     }
-
 
     companion object {
         // Token
