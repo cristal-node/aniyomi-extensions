@@ -137,8 +137,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
                     val videoUrl = item.jsonObject["magnet"]!!.jsonPrimitive.content
                     if (preferences.getString(PREF_DEBRID_KEY, "none") == "none") {
                         videoList.add(Video(videoUrl, quality, videoUrl))
-                    }
-                    else {
+                    } else {
                         videoList.add(Video(debrid(videoUrl), quality, debrid(videoUrl)))
                     }
                 }
