@@ -219,6 +219,26 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
         }
         screen.addPreference(qualityPref)
 
+
+        // Debrid provider
+        ListPreference(screen.context).apply {
+            key = "debrid_provider"
+            title = "Debrid Provider"
+            entries = arrayOf("a", "b")
+            entryValues = arrayOf("a", "b")
+            setDefaultValue("none")
+            summary = "%s"
+
+            setOnPreferenceChangeListener { _, newValue ->
+                val selected = newValue as String
+                val index = findIndexOfValue(selected)
+                val entry = entryValues[index] as String
+                preferences.edit().putString(key, entry).commit()
+            }
+        }.also(screen::addPreference)
+
+
+
         // Token
         EditTextPreference(screen.context).apply {
             key = "token"
