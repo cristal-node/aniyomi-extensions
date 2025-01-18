@@ -202,7 +202,8 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
     // Preferences
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-        val qualityPref = ListPreference(screen.context).apply {
+        // quality
+        ListPreference(screen.context).apply {
             key = "preferred_quality"
             title = "Default-Quality"
             entries = arrayOf("1080p", "720p", "480p")
@@ -216,8 +217,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
                 val entry = entryValues[index] as String
                 preferences.edit().putString(key, entry).commit()
             }
-        }
-        screen.addPreference(qualityPref)
+        }.also(screen::addPreference)
 
         // Debrid provider
         ListPreference(screen.context).apply {
