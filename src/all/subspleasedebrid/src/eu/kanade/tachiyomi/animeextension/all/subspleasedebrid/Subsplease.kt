@@ -12,15 +12,12 @@ import eu.kanade.tachiyomi.animesource.model.SEpisode
 import eu.kanade.tachiyomi.animesource.model.Video
 import eu.kanade.tachiyomi.animesource.online.AnimeHttpSource
 import eu.kanade.tachiyomi.network.GET
-import eu.kanade.tachiyomi.network.POST
 import eu.kanade.tachiyomi.util.asJsoup
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
-import okhttp3.Headers
-import okhttp3.FormBody
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
@@ -38,7 +35,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
 
     override val supportsLatest = false
 
-    override val client: OkHttpClient = network.client
+    override val client: OkHttpClient = network.cloudflareClient
 
     private val preferences: SharedPreferences by lazy {
         Injekt.get<Application>().getSharedPreferences("source_$id", 0x0000)
@@ -110,19 +107,6 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
         return videosFromElement(responseString, num)
     }
 
-    private fun RD(uri: String, k: String = "", v: String = ""): JsonObject {
-        val url = "https://api.real-debrid.com/rest/1.0$uri"
-        val token = preferences.getString(PREF_TOKEN_KEY, null)
-        if (token.isNullOrBlank()) throw UnsupportedOperationException()
-        val headers = Headers.Builder().set("Authorization", "Bearer $token").build()
-        val body = FormBody.Builder().add(k, v).build()
-        if ( k.isEmpty() ) val req = GET(url, headers)
-        else val req = POST(url, headers, body)
-        val res = client.newCall(req).execute().body().execute() // res.code == 200
-        if ( res.code == 204 ) return JsonObject(emptyMap())
-        return json.decodeFromString<JsonObject>(res.body.string())
-    }
-
     private fun videosFromElement(jsonLine: String?, num: String): List<Video> {
         val jsonData = jsonLine ?: return emptyList()
         val jObject = json.decodeFromString<JsonObject>(jsonData)
@@ -135,12 +119,8 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
                 val dowArray = itJ["downloads"]!!.jsonArray
                 for (item in dowArray) {
                     val quality = item.jsonObject["res"]!!.jsonPrimitive.content + "p"
-                    val magnet = item.jsonObject["magnet"]!!.jsonPrimitive.content
-                    val tid = RD("/torrents/addMagnet", "magnet", magnet).id
-                    RD("/torrents/selectFiles/$tid", "files", "all")
-                    val hURL = RD("/torrents/info/$tid")[0].links[0]
-                    link = RD("/unrestrict/link", "link", hURL).download
-                    videoList.add(Video(videoUrl, quality, link))
+                    val videoUrl = item.jsonObject["magnet"]!!.jsonPrimitive.content
+                    videoList.add(Video(videoUrl, quality, videoUrl))
                 }
             }
         }
@@ -208,42 +188,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
     // Preferences
 
     override fun setupPreferenceScreen(screen: PreferenceScreen) {
-
-        // Debrid provider
-        ListPreference(screen.context).apply {
-            key = PREF_DEBRID_KEY
-            title = "Debrid Provider"
-            entries = PREF_DEBRID_ENTRIES
-            entryValues = PREF_DEBRID_VALUES
-            setDefaultValue("realdebrid")
-            summary = "currently realdebrid is only available"
-
-            setOnPreferenceChangeListener { _, newValue ->
-                val selected = newValue as String
-                val index = findIndexOfValue(selected)
-                val entry = entryValues[index] as String
-                preferences.edit().putString(key, entry).commit()
-            }
-        }.also(screen::addPreference)
-
-        // Token
-        EditTextPreference(screen.context).apply {
-            key = PREF_TOKEN_KEY
-            title = "Token"
-            setDefaultValue(PREF_TOKEN_DEFAULT)
-            summary = PREF_TOKEN_SUMMARY
-
-            setOnPreferenceChangeListener { _, newValue ->
-                runCatching {
-                    val value = (newValue as String).trim().ifBlank { PREF_TOKEN_DEFAULT }
-                    Toast.makeText(screen.context, "Restart Aniyomi to apply new setting.", Toast.LENGTH_LONG).show()
-                    preferences.edit().putString(key, value).commit()
-                }.getOrDefault(false)
-            }
-        }.also(screen::addPreference)
-
-        // Quality
-        ListPreference(screen.context).apply {
+        val qualityPref = ListPreference(screen.context).apply {
             key = "preferred_quality"
             title = "Default-Quality"
             entries = arrayOf("1080p", "720p", "480p")
@@ -257,33 +202,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
                 val entry = entryValues[index] as String
                 preferences.edit().putString(key, entry).commit()
             }
-        }.also(screen::addPreference)
-    }
-
-
-    companion object {
-        // Token
-        private const val PREF_TOKEN_KEY = "token"
-        private const val PREF_TOKEN_DEFAULT = ""
-        private const val PREF_TOKEN_SUMMARY = "Exclusive to Debrid providers; not intended for Torrents."
-
-        // Debrid
-        private const val PREF_DEBRID_KEY = "debrid_provider"
-        private val PREF_DEBRID_ENTRIES = arrayOf(
-            "RealDebrid",
-            "Premiumize",
-            "AllDebrid",
-            "DebridLink",
-            "Offcloud",
-            "TorBox",
-        )
-        private val PREF_DEBRID_VALUES = arrayOf(
-            "realdebrid",
-            "premiumize",
-            "alldebrid",
-            "debridlink",
-            "offcloud",
-            "torbox",
-        )
+        }
+        screen.addPreference(qualityPref)
     }
 }
