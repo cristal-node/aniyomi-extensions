@@ -219,7 +219,6 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
         }
         screen.addPreference(qualityPref)
 
-
         // Debrid provider
         ListPreference(screen.context).apply {
             key = "debrid_provider"
@@ -236,8 +235,6 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
                 preferences.edit().putString(key, entry).commit()
             }
         }.also(screen::addPreference)
-
-
 
         // Token
         EditTextPreference(screen.context).apply {
