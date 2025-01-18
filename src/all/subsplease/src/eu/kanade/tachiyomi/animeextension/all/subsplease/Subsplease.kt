@@ -113,7 +113,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
         val regex = Regex("xt=urn:btih:([A-Fa-f0-9]{40}|[A-Za-z0-9]{32})|dn=([^&]+)")
         var infohash = ""
         var title = ""
-        regex.find(magnet).forEach { match ->
+        regex.findAll(magnet).forEach { match ->
             match.groups[1]?.value?.let { infohash = it }
             match.groups[2]?.value?.let { title = it }
         }
