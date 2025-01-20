@@ -92,7 +92,7 @@ class Subsplease : ConfigurableAnimeSource, AnimeHttpSource() {
             val itJ = it.value.jsonObject
             val episode = SEpisode.create()
             val num = itJ["episode"]!!.jsonPrimitive.content
-            val ep = num.takeWhile {it.isDigit() || it == '.'}.toFloatOrNull()
+            val ep = num.takeWhile { it.isDigit() || it == '.' }.toFloatOrNull()
             if (ep == null) {
                 if (episodeList.size) {
                     episode.episode_number = episodeList.get(episodeList.size - 1).episode_number - 0.5
